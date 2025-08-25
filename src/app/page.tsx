@@ -1,41 +1,47 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Contestant, Tournament, TournamentPhase } from '@/types/tournament';
-import { generateBracket, advanceWinner } from '@/lib/tournament';
-import { saveTournament, autoSaveTournament, isStorageAvailable, SavedTournament, validateSavedTournament } from '@/lib/persistence';
-import MainMenu from '@/components/MainMenu';
-import SavedTournaments from '@/components/SavedTournaments';
-import SaveTournamentDialog from '@/components/SaveTournamentDialog';
-import ContestantInput from '@/components/ContestantInput';
-import BracketGenerator from '@/components/BracketGenerator';
-import BracketDisplay from '@/components/BracketDisplay';
-import ManualBracketSetup from '@/components/ManualBracketSetup';
+import BracketDisplay from "@/components/BracketDisplay";
+import BracketGenerator from "@/components/BracketGenerator";
+import ContestantInput from "@/components/ContestantInput";
+import MainMenu from "@/components/MainMenu";
+import ManualBracketSetup from "@/components/ManualBracketSetup";
+import SavedTournaments from "@/components/SavedTournaments";
+import SaveTournamentDialog from "@/components/SaveTournamentDialog";
+import {
+  autoSaveTournament,
+  isStorageAvailable,
+  SavedTournament,
+  saveTournament,
+  validateSavedTournament,
+} from "@/lib/persistence";
+import { advanceWinner, generateBracket } from "@/lib/tournament";
+import { Contestant, Tournament, TournamentPhase } from "@/types/tournament";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const [phase, setPhase] = useState<TournamentPhase>('menu');
+  const [phase, setPhase] = useState<TournamentPhase>("menu");
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [currentSaveName, setCurrentSaveName] = useState('');
+  const [currentSaveName, setCurrentSaveName] = useState("");
 
   // Auto-save whenever tournament state changes
   useEffect(() => {
-    if (tournament && phase === 'tournament' && isStorageAvailable()) {
+    if (tournament && phase === "tournament" && isStorageAvailable()) {
       autoSaveTournament(tournament, phase, contestants);
     }
   }, [tournament, phase, contestants]);
 
   // Main menu handlers
   const handleNewTournament = () => {
-    setPhase('setup');
+    setPhase("setup");
     setContestants([]);
     setTournament(null);
-    setCurrentSaveName('');
+    setCurrentSaveName("");
   };
 
   const handleLoadTournaments = () => {
-    setPhase('saved-tournaments');
+    setPhase("saved-tournaments");
   };
 
   const handleLoadTournament = (saved: SavedTournament) => {
@@ -45,50 +51,52 @@ export default function Home() {
       setPhase(saved.phase);
       setCurrentSaveName(saved.name);
     } else {
-      alert('This saved tournament appears to be corrupted and cannot be loaded.');
+      alert(
+        "This saved tournament appears to be corrupted and cannot be loaded."
+      );
     }
   };
 
   const handleBackToMenu = () => {
-    setPhase('menu');
+    setPhase("menu");
   };
 
   // Tournament setup handlers
   const handleContestantsNext = () => {
-    setPhase('bracket-generation');
+    setPhase("bracket-generation");
   };
 
   const handleGenerateRandomBracket = () => {
     const newTournament = generateBracket(contestants, true);
     setTournament(newTournament);
-    setPhase('tournament');
+    setPhase("tournament");
   };
 
   const handleGenerateManualBracket = () => {
     const newTournament = generateBracket(contestants, false);
     setTournament(newTournament);
-    setPhase('tournament');
+    setPhase("tournament");
   };
 
   const handleManualSetup = () => {
-    setPhase('manual-setup');
+    setPhase("manual-setup");
   };
 
   const handleManualConfirm = (orderedContestants: Contestant[]) => {
     const newTournament = generateBracket(orderedContestants, false);
     setTournament(newTournament);
-    setPhase('tournament');
+    setPhase("tournament");
   };
 
   // Tournament match handlers
   const handleSelectWinner = (matchId: string, winner: Contestant) => {
     if (!tournament) return;
-    
+
     const updatedTournament = advanceWinner(tournament, matchId, winner);
     setTournament(updatedTournament);
-    
+
     if (updatedTournament.isComplete) {
-      setPhase('complete');
+      setPhase("complete");
     }
   };
 
@@ -98,7 +106,7 @@ export default function Home() {
       saveTournament(name, tournament, phase, contestants);
       setCurrentSaveName(name);
       setShowSaveDialog(false);
-      alert('Tournament saved successfully!');
+      alert("Tournament saved successfully!");
     }
   };
 
@@ -108,23 +116,23 @@ export default function Home() {
 
   // Navigation handlers
   const handleBackToSetup = () => {
-    setPhase('setup');
+    setPhase("setup");
   };
 
   const handleBackToBracketGeneration = () => {
-    setPhase('bracket-generation');
+    setPhase("bracket-generation");
   };
 
   const handleRestart = () => {
-    setPhase('menu');
+    setPhase("menu");
     setContestants([]);
     setTournament(null);
-    setCurrentSaveName('');
+    setCurrentSaveName("");
   };
 
   const renderPhase = () => {
     switch (phase) {
-      case 'menu':
+      case "menu":
         return (
           <MainMenu
             onNewTournament={handleNewTournament}
@@ -132,7 +140,7 @@ export default function Home() {
           />
         );
 
-      case 'saved-tournaments':
+      case "saved-tournaments":
         return (
           <SavedTournaments
             onLoadTournament={handleLoadTournament}
@@ -140,7 +148,7 @@ export default function Home() {
           />
         );
 
-      case 'setup':
+      case "setup":
         return (
           <ContestantInput
             contestants={contestants}
@@ -149,8 +157,8 @@ export default function Home() {
             onBack={handleBackToMenu}
           />
         );
-      
-      case 'bracket-generation':
+
+      case "bracket-generation":
         return (
           <BracketGenerator
             contestants={contestants}
@@ -160,8 +168,8 @@ export default function Home() {
             onBack={handleBackToSetup}
           />
         );
-      
-      case 'manual-setup':
+
+      case "manual-setup":
         return (
           <ManualBracketSetup
             contestants={contestants}
@@ -169,9 +177,9 @@ export default function Home() {
             onBack={handleBackToBracketGeneration}
           />
         );
-      
-      case 'tournament':
-      case 'complete':
+
+      case "tournament":
+      case "complete":
         return tournament ? (
           <div className="w-full">
             <BracketDisplay
@@ -188,7 +196,7 @@ export default function Home() {
                     💾 Save Tournament
                   </button>
                 )}
-                
+
                 <button
                   onClick={handleRestart}
                   className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
@@ -196,7 +204,7 @@ export default function Home() {
                   🏠 Main Menu
                 </button>
               </div>
-              
+
               {currentSaveName && (
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Currently loaded: <strong>{currentSaveName}</strong>
@@ -205,7 +213,7 @@ export default function Home() {
             </div>
           </div>
         ) : null;
-      
+
       default:
         return null;
     }
@@ -214,19 +222,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4">
-        {phase !== 'menu' && (
+        {phase !== "menu" && (
           <header className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
-              🏆 Tournament Runner
+              🏆 Tournament Manager
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               Single elimination tournament manager
             </p>
           </header>
         )}
-        
+
         {renderPhase()}
-        
+
         <SaveTournamentDialog
           isOpen={showSaveDialog}
           onSave={handleSaveTournament}

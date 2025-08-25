@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tournament Runner",
+  title: "Tournament Manager",
   description: "Single elimination tournament manager",
 };
 
