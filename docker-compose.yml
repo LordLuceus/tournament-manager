@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: tournament-runner
+    ports:
+      - 127.0.0.1:3002:3000
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
