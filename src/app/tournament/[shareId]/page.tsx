@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Tournament } from '@/types/tournament';
-import BracketDisplay from '@/components/BracketDisplay';
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import BracketDisplay from "@/components/BracketDisplay";
+import { Tournament } from "@/types/tournament";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SharedTournamentPage() {
   const params = useParams();
@@ -15,7 +15,7 @@ export default function SharedTournamentPage() {
 
   useEffect(() => {
     if (!shareId) {
-      setError('Invalid tournament link');
+      setError("Invalid tournament link");
       setLoading(false);
       return;
     }
@@ -23,12 +23,12 @@ export default function SharedTournamentPage() {
     const fetchTournament = async () => {
       try {
         const response = await fetch(`/api/tournament/${shareId}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
-            setError('Tournament not found or no longer available');
+            setError("Tournament not found or no longer available");
           } else {
-            setError('Failed to load tournament');
+            setError("Failed to load tournament");
           }
           return;
         }
@@ -36,8 +36,8 @@ export default function SharedTournamentPage() {
         const tournamentData: Tournament = await response.json();
         setTournament(tournamentData);
       } catch (err) {
-        console.error('Error fetching tournament:', err);
-        setError('Failed to load tournament');
+        console.error("Error fetching tournament:", err);
+        setError("Failed to load tournament");
       } finally {
         setLoading(false);
       }
@@ -49,9 +49,9 @@ export default function SharedTournamentPage() {
   const copyShareLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      alert('Tournament link copied to clipboard!');
+      alert("Tournament link copied to clipboard!");
     } catch (err) {
-      console.error('Failed to copy link:', err);
+      console.error("Failed to copy link:", err);
     }
   };
 
@@ -60,7 +60,9 @@ export default function SharedTournamentPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading tournament...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading tournament...
+          </p>
         </div>
       </div>
     );
@@ -74,10 +76,8 @@ export default function SharedTournamentPage() {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
             Tournament Not Found
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {error}
-          </p>
-          <Link 
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <Link
             href="/"
             className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
@@ -100,14 +100,18 @@ export default function SharedTournamentPage() {
             🏆 Shared Tournament
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {tournament.contestants.length} contestants • {tournament.totalRounds} rounds
+            {tournament.contestants.length} contestants •{" "}
+            {tournament.totalRounds} rounds
             {tournament.isComplete && tournament.winner && (
               <span className="ml-2">
-                • Winner: <strong className="text-yellow-600 dark:text-yellow-400">{tournament.winner.name}</strong>
+                • Winner:{" "}
+                <strong className="text-yellow-600 dark:text-yellow-400">
+                  {tournament.winner.name}
+                </strong>
               </span>
             )}
           </p>
-          
+
           <div className="flex gap-3 justify-center flex-wrap">
             <button
               onClick={copyShareLink}
@@ -140,28 +144,34 @@ export default function SharedTournamentPage() {
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {tournament.contestants.length}
               </div>
-              <div className="text-sm text-blue-600 dark:text-blue-400">Contestants</div>
+              <div className="text-sm text-blue-600 dark:text-blue-400">
+                Contestants
+              </div>
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {tournament.matches.filter(m => m.isFinished).length}
+                {tournament.matches.filter((m) => m.isFinished).length}
               </div>
-              <div className="text-sm text-green-600 dark:text-green-400">Completed Matches</div>
+              <div className="text-sm text-green-600 dark:text-green-400">
+                Completed Matches
+              </div>
             </div>
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {tournament.matches.filter(m => m.report).length}
+                {tournament.matches.filter((m) => m.report).length}
               </div>
-              <div className="text-sm text-purple-600 dark:text-purple-400">Matches with Reports</div>
+              <div className="text-sm text-purple-600 dark:text-purple-400">
+                Matches with Reports
+              </div>
             </div>
           </div>
         </div>
 
         <footer className="text-center mt-8 text-gray-500 dark:text-gray-400 text-sm">
           <p>
-            Powered by{' '}
-            <Link 
-              href="/" 
+            Powered by{" "}
+            <Link
+              href="/"
               className="text-blue-600 dark:text-blue-400 hover:underline"
             >
               Tournament Manager
