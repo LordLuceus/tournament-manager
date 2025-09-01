@@ -7,9 +7,16 @@ import MatchCard from './MatchCard';
 interface BracketDisplayProps {
   tournament: Tournament;
   onSelectWinner: (matchId: string, winner: Contestant) => void;
+  onUpdateReport?: (matchId: string, report: string) => void;
+  isReadOnly?: boolean;
 }
 
-export default function BracketDisplay({ tournament, onSelectWinner }: BracketDisplayProps) {
+export default function BracketDisplay({ 
+  tournament, 
+  onSelectWinner, 
+  onUpdateReport,
+  isReadOnly = false 
+}: BracketDisplayProps) {
   return (
     <div className="w-full overflow-x-auto p-4">
       <div className="min-w-fit">
@@ -42,6 +49,8 @@ export default function BracketDisplay({ tournament, onSelectWinner }: BracketDi
                       <MatchCard
                         match={match}
                         onSelectWinner={onSelectWinner}
+                        onUpdateReport={onUpdateReport}
+                        isReadOnly={isReadOnly}
                       />
                       
                       {/* Connector lines */}

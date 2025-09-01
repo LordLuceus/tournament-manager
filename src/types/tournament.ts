@@ -12,6 +12,7 @@ export interface Match {
   winner?: Contestant;
   isFinished: boolean;
   isBye: boolean;
+  report?: string;
 }
 
 export interface Tournament {
@@ -22,6 +23,8 @@ export interface Tournament {
   totalRounds: number;
   isComplete: boolean;
   winner?: Contestant;
+  isPublic?: boolean;
+  shareId?: string;
 }
 
 export type TournamentPhase = 'menu' | 'saved-tournaments' | 'setup' | 'bracket-generation' | 'manual-setup' | 'tournament' | 'complete';

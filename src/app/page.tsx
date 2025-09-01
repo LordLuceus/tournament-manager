@@ -24,6 +24,8 @@ export default function Home() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [currentSaveName, setCurrentSaveName] = useState("");
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Auto-save whenever tournament state changes
   useEffect(() => {
@@ -100,6 +102,23 @@ export default function Home() {
     }
   };
 
+  const handleUpdateReport = (matchId: string, report: string) => {
+    if (!tournament) return;
+
+    const updatedMatches = tournament.matches.map(match => 
+      match.id === matchId 
+        ? { ...match, report: report.trim() || undefined }
+        : match
+    );
+
+    const updatedTournament = {
+      ...tournament,
+      matches: updatedMatches
+    };
+
+    setTournament(updatedTournament);
+  };
+
   // Save/load handlers
   const handleSaveTournament = (name: string) => {
     if (tournament) {
@@ -112,6 +131,44 @@ export default function Home() {
 
   const handleShowSaveDialog = () => {
     setShowSaveDialog(true);
+  };
+
+  const handleShareTournament = async () => {
+    if (!tournament || !tournament.isComplete) return;
+
+    setIsSharing(true);
+    try {
+      const response = await fetch('/api/tournament/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tournament),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to share tournament');
+      }
+
+      const data = await response.json();
+      setShareUrl(data.shareUrl);
+    } catch (error) {
+      console.error('Error sharing tournament:', error);
+      alert('Failed to share tournament. Please try again.');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleCopyShareLink = async () => {
+    if (!shareUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Tournament link copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+    }
   };
 
   // Navigation handlers
@@ -185,6 +242,7 @@ export default function Home() {
             <BracketDisplay
               tournament={tournament}
               onSelectWinner={handleSelectWinner}
+              onUpdateReport={handleUpdateReport}
             />
             <div className="text-center mt-6 space-y-3">
               <div className="flex gap-4 justify-center flex-wrap">
@@ -197,6 +255,25 @@ export default function Home() {
                   </button>
                 )}
 
+                {tournament.isComplete && (
+                  shareUrl ? (
+                    <button
+                      onClick={handleCopyShareLink}
+                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      🔗 Copy Share Link
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleShareTournament}
+                      disabled={isSharing}
+                      className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-purple-400 transition-colors font-medium"
+                    >
+                      {isSharing ? '⏳ Sharing...' : '🌐 Share Tournament'}
+                    </button>
+                  )
+                )}
+
                 <button
                   onClick={handleRestart}
                   className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
@@ -204,6 +281,28 @@ export default function Home() {
                   🏠 Main Menu
                 </button>
               </div>
+
+              {shareUrl && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 max-w-2xl mx-auto">
+                  <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                    🎉 Tournament shared successfully!
+                  </p>
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-600 rounded p-2">
+                    <input
+                      type="text"
+                      value={shareUrl}
+                      readOnly
+                      className="flex-1 text-xs bg-transparent border-none outline-none text-gray-700 dark:text-gray-300"
+                    />
+                    <button
+                      onClick={handleCopyShareLink}
+                      className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {currentSaveName && (
                 <p className="text-sm text-gray-600 dark:text-gray-400">

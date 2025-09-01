@@ -6,4 +6,6 @@ services:
       - 127.0.0.1:3002:3000
     environment:
       NODE_ENV: production
+    volumes:
+      - ./data/shared-tournaments:/app/shared-tournaments
     restart: unless-stopped
