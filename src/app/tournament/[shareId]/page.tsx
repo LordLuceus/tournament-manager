@@ -131,6 +131,7 @@ export default function SharedTournamentPage() {
         <BracketDisplay
           tournament={tournament}
           onSelectWinner={() => {}} // No-op for read-only view
+          onChangeWinner={() => {}} // No-op for read-only view
           isReadOnly={true}
         />
 

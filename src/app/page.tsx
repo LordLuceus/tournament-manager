@@ -14,7 +14,7 @@ import {
   saveTournament,
   validateSavedTournament,
 } from "@/lib/persistence";
-import { advanceWinner, generateBracket } from "@/lib/tournament";
+import { advanceWinner, changeMatchWinner, generateBracket } from "@/lib/tournament";
 import { Contestant, Tournament, TournamentPhase } from "@/types/tournament";
 import { useEffect, useState } from "react";
 
@@ -102,11 +102,25 @@ export default function Home() {
     }
   };
 
+  const handleChangeWinner = (matchId: string, newWinner: Contestant) => {
+    if (!tournament) return;
+
+    const updatedTournament = changeMatchWinner(tournament, matchId, newWinner);
+    setTournament(updatedTournament);
+
+    // Update tournament completion status
+    if (updatedTournament.isComplete) {
+      setPhase("complete");
+    } else if (phase === "complete" && !updatedTournament.isComplete) {
+      setPhase("tournament");
+    }
+  };
+
   const handleUpdateReport = (matchId: string, report: string) => {
     if (!tournament) return;
 
-    const updatedMatches = tournament.matches.map(match => 
-      match.id === matchId 
+    const updatedMatches = tournament.matches.map(match =>
+      match.id === matchId
         ? { ...match, report: report.trim() || undefined }
         : match
     );
@@ -242,6 +256,7 @@ export default function Home() {
             <BracketDisplay
               tournament={tournament}
               onSelectWinner={handleSelectWinner}
+              onChangeWinner={handleChangeWinner}
               onUpdateReport={handleUpdateReport}
             />
             <div className="text-center mt-6 space-y-3">

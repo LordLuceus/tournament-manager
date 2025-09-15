@@ -144,6 +144,111 @@ export function advanceWinner(tournament: Tournament, matchId: string, winner: C
   };
 }
 
+export function changeMatchWinner(tournament: Tournament, matchId: string, newWinner: Contestant): Tournament {
+  const updatedMatches = [...tournament.matches];
+
+  // Find the match to change
+  const matchIndex = updatedMatches.findIndex(m => m.id === matchId);
+  if (matchIndex === -1) return tournament;
+
+  const match = updatedMatches[matchIndex];
+
+  // Verify the new winner is one of the contestants in this match
+  if (match.contestant1?.id !== newWinner.id && match.contestant2?.id !== newWinner.id) {
+    return tournament;
+  }
+
+  // If the winner is the same, no change needed
+  if (match.winner?.id === newWinner.id) {
+    return tournament;
+  }
+
+  // Update the match with the new winner
+  updatedMatches[matchIndex] = {
+    ...match,
+    winner: newWinner,
+  };
+
+  // Need to cascade the change to subsequent rounds
+  // First, remove the old winner from subsequent rounds
+  const nextRound = match.round + 1;
+
+  if (nextRound <= tournament.totalRounds) {
+    const nextMatchPosition = Math.floor(match.position / 2);
+    const nextMatchIndex = updatedMatches.findIndex(
+      m => m.round === nextRound && m.position === nextMatchPosition
+    );
+
+    if (nextMatchIndex !== -1) {
+      const nextMatch = updatedMatches[nextMatchIndex];
+      const isFirstSlot = match.position % 2 === 0;
+
+      // Replace the contestant in the next match
+      const updatedNextMatch = {
+        ...nextMatch,
+        [isFirstSlot ? 'contestant1' : 'contestant2']: newWinner,
+      };
+
+      // Reset subsequent matches if they were finished
+      if (nextMatch.isFinished) {
+        updatedNextMatch.winner = undefined;
+        updatedNextMatch.isFinished = false;
+        updatedNextMatch.isBye = false;
+
+        // Recursively reset all matches that were affected by this change
+        resetSubsequentMatches(updatedMatches, nextMatch.round, nextMatch.position, tournament.totalRounds);
+      }
+
+      updatedMatches[nextMatchIndex] = updatedNextMatch;
+    }
+  }
+
+  // Recalculate tournament completion status
+  const finalMatch = updatedMatches.find(m => m.round === tournament.totalRounds);
+  const isComplete = finalMatch?.isFinished || false;
+  const tournamentWinner = isComplete ? finalMatch?.winner : undefined;
+
+  return {
+    ...tournament,
+    matches: updatedMatches,
+    isComplete,
+    winner: tournamentWinner,
+  };
+}
+
+function resetSubsequentMatches(matches: Match[], startRound: number, startPosition: number, totalRounds: number): void {
+  // Reset all matches that were affected by the winner change
+  for (let round = startRound + 1; round <= totalRounds; round++) {
+    const position = Math.floor(startPosition / Math.pow(2, round - startRound));
+    const matchIndex = matches.findIndex(m => m.round === round && m.position === position);
+
+    if (matchIndex !== -1 && matches[matchIndex].isFinished) {
+      matches[matchIndex] = {
+        ...matches[matchIndex],
+        winner: undefined,
+        isFinished: false,
+        isBye: false,
+        // Clear contestants if they came from the changed path
+      };
+
+      // Clear the contestant slot that would have been filled by this match
+      if (round < totalRounds) {
+        const nextPosition = Math.floor(position / 2);
+        const nextMatchIndex = matches.findIndex(m => m.round === round + 1 && m.position === nextPosition);
+        if (nextMatchIndex !== -1) {
+          const isFirstSlot = position % 2 === 0;
+          matches[nextMatchIndex] = {
+            ...matches[nextMatchIndex],
+            [isFirstSlot ? 'contestant1' : 'contestant2']: undefined,
+          };
+        }
+      }
+    } else {
+      break; // If this match wasn't finished, subsequent ones weren't affected
+    }
+  }
+}
+
 export function getMatchesByRound(tournament: Tournament, round: number): Match[] {
   return tournament.matches.filter(match => match.round === round);
 }
