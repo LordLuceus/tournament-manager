@@ -1,6 +1,7 @@
 'use client';
 
 import { isStorageAvailable } from '@/lib/persistence';
+import { useEffect, useState } from 'react';
 
 interface MainMenuProps {
   onNewTournament: () => void;
@@ -8,7 +9,11 @@ interface MainMenuProps {
 }
 
 export default function MainMenu({ onNewTournament, onLoadTournaments }: MainMenuProps) {
-  const storageAvailable = isStorageAvailable();
+  const [storageAvailable, setStorageAvailable] = useState(false);
+
+  useEffect(() => {
+    setStorageAvailable(isStorageAvailable());
+  }, []);
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
