@@ -2,7 +2,7 @@ FROM node:22-slim AS deps
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
@@ -12,7 +12,7 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11
 
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules
@@ -25,7 +25,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@11
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
